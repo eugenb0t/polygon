@@ -6,13 +6,16 @@
 #include <vector>
 #include <unordered_map>
 #include <utility>
-#include <functional> // Не забудьте добавить этот заголовочный файл!
+#include <functional>
 #include <math.h>
 #include <iomanip> // Для std::setprecision
 #include <queue>
 #include <algorithm>
 #include <limits>
 #include <cmath>
+#include <chrono>
+#include <unordered_set>
+
 
 // Хэш-функция для пар
 struct hash_pair {
@@ -104,20 +107,12 @@ bool readGraph(const std::string& filename, Graph& graph) {
         std::getline(ss, start, ':');
         double lat1, lon1;
         sscanf(start.c_str(), "%lf,%lf", &lat1, &lon1);
-        // std::cout << start << std::endl;
 
         // Читаем остальные точки
         while (std::getline(ss, end, ';')) {
-            // std::cout << end << std::endl;
             std::stringstream ss_end(end);
             double lat2, lon2, weight;
-            std::string coords;
 
-            // std::getline(ss_end, coords, ',');
-            // std::getline(ss_end, coords, ',');
-            // lat2 = std::stod(coords);
-            // std::getline(ss_end, coords);
-            // weight = std::stod(coords);
             sscanf(end.c_str(), "%lf,%lf,%lf", &lat2, &lon2, &weight);
 
             // Добавляем рёбра в граф
@@ -130,45 +125,44 @@ bool readGraph(const std::string& filename, Graph& graph) {
 }
 
 // Функция для поиска кратчайшего пути
-double dfs(Node* current, Node* target, double currentWeight, double& minWeight,
-           std::vector<Node*>& path, std::vector<Node*>& bestPath, 
-           std::unordered_map<double, bool>& visited) {
-    if (current == target) {
-        if (currentWeight < minWeight) {
-            minWeight = currentWeight;
-            bestPath = path; // Обновляем лучший путь
+std::vector<Node*> bfs(Graph& graph, Node* start, Node* target) {
+    std::unordered_set<Node*> visited; // Хранит посещённые узлы
+    std::queue<std::pair<Node*, std::vector<Node*>>> queue; // Очередь для BFS
+    std::vector<Node*> bestPath;
+
+    queue.push({start, {start}}); // Добавляем начальный узел в очередь
+
+    while (!queue.empty()) {
+        auto [current, currentPath] = queue.front();
+        queue.pop();
+
+        // Если достигли целевой узел
+        if (current == target) {
+            return currentPath; // Возвращаем текущий путь, если достигли цели
         }
-        return currentWeight;
+
+        // Добавляем текущий узел в посещённые
+        if (visited.find(current) == visited.end()) {
+            visited.insert(current);
+
+            // Идем по соседям
+            for (const auto& connection : current->nodes) {
+                Node* neighbor = connection.first;
+
+                if (visited.find(neighbor) == visited.end()) {
+                    std::vector<Node*> newPath = currentPath; // Создаём новый путь
+                    newPath.push_back(neighbor); // Добавляем соседний узел в путь
+                    queue.push({neighbor, newPath}); // Добавляем соседний узел в очередь
+                }
+            }
+        }
     }
 
-    visited[current->lat] = true; // Обозначаем текущий узел как посещённый
-    for (const auto& connection : current->nodes) {
-        Node* neighbor = connection.first;
-        double weight = connection.second;
-
-        if (!visited[neighbor->lat]) { // Если соседний узел не посещён
-            path.push_back(neighbor); // Добавляем в текущий путь
-            dfs(neighbor, target, currentWeight + weight, minWeight, path, bestPath, visited); // Рекурсивно ищем
-            path.pop_back(); // Убираем узел из текущего пути
-        }
-    }
-    visited[current->lat] = false; // Возвращаем состояние посещённости
-    return minWeight;
+    return {}; // Если не нашли путь, возвращаем пустой вектор
 }
 
-// Функция для инициации поиска кратчайшего пути
+/*
 std::vector<Node*> findShortestPathDFS(Graph& graph, Node* start_node, Node* target_node) {
-    double minWeight = std::numeric_limits<double>::max();
-    std::vector<Node*> path, bestPath;
-
-    std::unordered_map<double, bool> visited; // Используем map для отметки посещённости (по lat)
-    path.push_back(start_node);
-    dfs(start_node, target_node, 0.0, minWeight, path, bestPath, visited);
-    
-    return bestPath; // Возвращаем лучший найденный путь
-}
-
-std::vector<Node*> findShortestPathBFS(Graph& graph, Node* start_node, Node* target_node) {
     std::unordered_map<Node*, Node*> parentMap; // Для отслеживания родительских узлов
     std::unordered_map<Node*, double> weightMap; // Для отслеживания весов
     std::queue<Node*> queue;
@@ -209,14 +203,14 @@ std::vector<Node*> findShortestPathBFS(Graph& graph, Node* start_node, Node* tar
 
     return {}; // Если путь не найден, возвращаем пустой вектор
 }
-
+*/
 // Структура для сравнения в очереди
 struct NodeComparator {
     bool operator()(const std::pair<Node*, double>& left, const std::pair<Node*, double>& right) {
         return left.second > right.second; // Минимум по весу
     }
 };
-
+/*
 std::vector<Node*> findShortestPathDijkstra(Graph& graph, Node* start_node, Node* target_node) {
     std::unordered_map<Node*, Node*> parentMap; // Для отслеживания родительских узлов
     std::unordered_map<Node*, double> distanceMap; // Для отслеживания минимального расстояния
@@ -267,12 +261,12 @@ std::vector<Node*> findShortestPathDijkstra(Graph& graph, Node* start_node, Node
 
     return {}; // Если путь не найден, возвращаем пустой вектор
 }
-
+*/
 // Евклидово расстояние как эвристическая функция
 double heuristic(Node* a, Node* b) {
     return std::sqrt(std::pow(a->lat - b->lat, 2) + std::pow(a->lon - b->lon, 2));
 }
-
+/*
 std::vector<Node*> findShortestPathAStar(Graph& graph, Node* start_node, Node* target_node) {
     std::unordered_map<Node*, Node*> parentMap; // Для отслеживания родительских узлов
     std::unordered_map<Node*, double> gScore; // Минимальная стоимость от старта до узла
@@ -328,7 +322,7 @@ std::vector<Node*> findShortestPathAStar(Graph& graph, Node* start_node, Node* t
 
     return {}; // Если путь не найден, возвращаем пустой вектор
 }
-
+*/
 int main() {
     Graph graph;
 
@@ -338,7 +332,9 @@ int main() {
     }
 
     // Вывод графа
-    //graph.printGraph();
+    // std::cout << "Graph read" << std::endl;
+    graph.printGraph();
+    
     double home_lat = 30.314299;
     double home_lon = 59.928361;
 
@@ -351,11 +347,17 @@ int main() {
     //         for (const auto& connection : closest_node->nodes) {
     //             std::cout << "  -> (" << connection.first->lat << ", " << connection.first->lon << ") with weight " << connection.second << "\n";
     //         }
-    std::vector<Node*> shortest_path_dfs = findShortestPathDFS(graph, home_closest_node, itmo_closest_node);
-    std::vector<Node*> shortest_path_bfs = findShortestPathBFS(graph, home_closest_node, itmo_closest_node);
-    std::vector<Node*> shortest_path_dijkstra = findShortestPathDijkstra(graph, home_closest_node, itmo_closest_node);
-    std::vector<Node*> shortest_path_astar = findShortestPathAStar(graph, home_closest_node, itmo_closest_node);
-    
+    auto start = std::chrono::high_resolution_clock::now(); // Фиксируем время старта
+
+    std::cout << "DFS started" << std::endl;
+    std::vector<Node*> shortest_path_dfs = bfs(graph, home_closest_node, itmo_closest_node);
+    // std::vector<Node*> shortest_path_bfs = findShortestPathBFS(graph, home_closest_node, itmo_closest_node);
+    // std::vector<Node*> shortest_path_dijkstra = findShortestPathDijkstra(graph, home_closest_node, itmo_closest_node);
+    // std::vector<Node*> shortest_path_astar = findShortestPathAStar(graph, home_closest_node, itmo_closest_node);
+
+    auto end = std::chrono::high_resolution_clock::now(); // Фиксируем время окончания
+    std::chrono::duration<double> duration = end - start;
+    std::cout << "DFS time: " << duration.count() << std::endl;
 
     for (const auto& node : shortest_path_dfs) {
         std::cout << "(" << node->lat << ", " << node->lon << ") ";
