@@ -218,7 +218,6 @@ std::pair<std::vector<Node*>, double> dfs(Graph& graph, Node* start, Node* targe
     return {{}, 0.0}; // Если не нашли путь, возвращаем пустой вектор и вес 0
 }
 
-
 std::pair<std::vector<Node*>, double> dijkstra(Graph& graph, Node* start, Node* target) {
     std::unordered_set<Node*> visited; // Хранит посещённые узлы
     std::priority_queue<std::tuple<double, Node*, std::vector<Node*>>, 
@@ -380,6 +379,32 @@ int main() {
     std::cout << "dfs total weight: " << dfs_summary_weight << std::endl;
     std::cout << "dijkstra total weight: " << dijkstra_summary_weight << std::endl;
     std::cout << "a* total weight: " << astar_summary_weight << std::endl;
+
+    // std::cout << "BFS path: " << std::endl;
+    // for (const auto& node : shortest_path_bfs) {
+    //     std::cout << "(" << node->lat << ", " << node->lon << ") ";
+    // }
+
+    // std::cout << std::endl;
+
+    //  std::cout << "DFS path: " << std::endl;
+    // for (const auto& node : shortest_path_dfs) {
+    //     std::cout << "(" << node->lat << ", " << node->lon << ") ";
+    // }
+
+    // std::cout << std::endl;
+
+    //  std::cout << "Dijkstra path: " << std::endl;
+    // for (const auto& node : shortest_path_dijkstra) {
+    //     std::cout << "(" << node->lat << ", " << node->lon << ") ";
+    // }
+
+    // std::cout << std::endl;
+
+    // std::cout << "A* path: " << std::endl;
+    // for (const auto& node : shortest_path_astar) {
+    //     std::cout << "(" << node->lat << ", " << node->lon << ") ";
+    // }
 
     std::cout << std::endl;
 
