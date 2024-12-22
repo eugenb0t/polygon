@@ -42,18 +42,21 @@ struct Node {
 
 class Graph {
 public:
+
+    // Функция добавления ребра в граф
     void addEdge(double lon1, double lat1, double lon2, double lat2, double weight) {
-        Node* node1 = getNode(lon1, lat1);
-        Node* node2 = getNode(lon2, lat2);
-        node1->nodes.push_back({node2, weight});
+        Node* node1 = getNode(lon1, lat1); // Получаем первую ноду по координатам
+        Node* node2 = getNode(lon2, lat2); // Получаем вторую ноду по координатам
+        node1->nodes.push_back({node2, weight}); // Добавляем новую связь node1 с node2
     }
     
+    // Функция получения (добавления) ноды в граф
     Node* getNode(double lon, double lat) {
         std::pair<double, double> key = {lon, lat};
-        if (nodeMap.find(key) == nodeMap.end()) {
-            nodeMap[key] = new Node(lon, lat);
+        if (nodeMap.find(key) == nodeMap.end()) { // Если не нашли ноду по координатам
+            nodeMap[key] = new Node(lon, lat); // Добавляем её
         }
-        return nodeMap[key];
+        return nodeMap[key]; // Возвращаем
     }
 
     Node* find_closest_node(double lat, double lon) {
@@ -130,7 +133,6 @@ bool readGraph(const std::string& filename, Graph& graph) {
     return true;
 }
 
-// Функция для поиска кратчайшего пути
 std::pair<std::vector<Node*>, double> bfs(Graph& graph, Node* start, Node* target) {
     std::unordered_set<Node*> visited; // Хранит посещённые узлы
     std::queue<std::tuple<Node*, std::vector<Node*>, double>> queue; // Очередь для BFS
@@ -260,13 +262,11 @@ std::pair<std::vector<Node*>, double> dijkstra(Graph& graph, Node* start, Node* 
     return {{}, 0.0}; // Если не нашли путь, возвращаем пустой вектор и вес 0
 }
 
-// Функция для вычисления эвристики (например, евклидово расстояние)
+// Функция для вычисления эвристики (евклидово расстояние)
 double heuristic(Node* a, Node* b) {
     return std::sqrt(std::pow(a->lat - b->lat, 2) + std::pow(a->lon - b->lon, 2));
 }
 
-// Функция A*
-// Функция A* с подсчётом веса
 std::pair<std::vector<Node*>, double> aStar(Graph& graph, Node* start, Node* target) {
     std::unordered_set<Node*> visited; // Хранит посещённые узлы
     std::priority_queue<std::tuple<double, Node*, std::vector<Node*>>, 
